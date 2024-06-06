@@ -153,6 +153,22 @@ func Test_IntStrMap_Batch(t *testing.T) {
 	})
 }
 
+func Test_IntStrMap_Iterator_Deadlock(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		m := gmap.NewIntStrMapFrom(map[int]string{1: "1", 2: "2", 3: "3", 4: "4"}, true)
+		m.Iterator(func(k int, _ string) bool {
+			if k%2 == 0 {
+				m.Remove(k)
+			}
+			return true
+		})
+		t.Assert(m.Map(), map[int]string{
+			1: "1",
+			3: "3",
+		})
+	})
+}
+
 func Test_IntStrMap_Iterator(t *testing.T) {
 	gtest.C(t, func(t *gtest.T) {
 		expect := map[int]string{1: "a", 2: "b"}
@@ -460,5 +476,26 @@ func Test_IntStrMap_IsSubOf(t *testing.T) {
 		t.Assert(m1.IsSubOf(m2), false)
 		t.Assert(m2.IsSubOf(m1), true)
 		t.Assert(m2.IsSubOf(m2), true)
+	})
+}
+
+func Test_IntStrMap_Diff(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		m1 := gmap.NewIntStrMapFrom(g.MapIntStr{
+			0: "0",
+			1: "1",
+			2: "2",
+			3: "3",
+		})
+		m2 := gmap.NewIntStrMapFrom(g.MapIntStr{
+			0: "0",
+			2: "2",
+			3: "31",
+			4: "4",
+		})
+		addedKeys, removedKeys, updatedKeys := m1.Diff(m2)
+		t.Assert(addedKeys, []int{4})
+		t.Assert(removedKeys, []int{1})
+		t.Assert(updatedKeys, []int{3})
 	})
 }

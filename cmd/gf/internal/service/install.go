@@ -1,3 +1,9 @@
+// Copyright GoFrame gf Author(https://goframe.org). All Rights Reserved.
+//
+// This Source Code Form is subject to the terms of the MIT License.
+// If a copy of the MIT was not distributed with this file,
+// You can obtain one at https://github.com/gogf/gf.
+
 package service
 
 import (
@@ -105,6 +111,8 @@ func (s serviceInstall) Run(ctx context.Context) (err error) {
 			)
 			if input != "" {
 				inputID = gconv.Int(input)
+			} else {
+				break
 			}
 			// Check if out of range.
 			if inputID >= len(paths) || inputID < 0 {
@@ -142,7 +150,7 @@ func (s serviceInstall) IsInstalled() (*serviceInstallAvailablePath, bool) {
 	return nil, false
 }
 
-// getGoPathBinFilePath retrieves ad returns the GOPATH/bin path for binary.
+// getGoPathBin retrieves ad returns the GOPATH/bin path for binary.
 func (s serviceInstall) getGoPathBin() string {
 	if goPath := genv.Get(`GOPATH`).String(); goPath != "" {
 		return gfile.Join(goPath, "bin")

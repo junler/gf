@@ -1,14 +1,22 @@
+// Copyright GoFrame gf Author(https://goframe.org). All Rights Reserved.
+//
+// This Source Code Form is subject to the terms of the MIT License.
+// If a copy of the MIT was not distributed with this file,
+// You can obtain one at https://github.com/gogf/gf.
+
 package utils
 
 import (
 	"context"
 	"fmt"
+
 	"golang.org/x/tools/imports"
 
 	"github.com/gogf/gf/cmd/gf/v2/internal/consts"
 	"github.com/gogf/gf/cmd/gf/v2/internal/utility/mlog"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gproc"
+	"github.com/gogf/gf/v2/text/gregex"
 	"github.com/gogf/gf/v2/text/gstr"
 )
 
@@ -65,4 +73,66 @@ func ReplaceGeneratedContentGFV2(folderPath string) (err error) {
 		}
 		return content
 	}, folderPath, "*.go", true)
+}
+
+// GetImportPath calculates and returns the golang import path for given `filePath`.
+// Note that it needs a `go.mod` in current working directory or parent directories to detect the path.
+func GetImportPath(filePath string) string {
+	// If `filePath` does not exist, create it firstly to find the import path.
+	var realPath = gfile.RealPath(filePath)
+	if realPath == "" {
+		_ = gfile.Mkdir(filePath)
+		realPath = gfile.RealPath(filePath)
+	}
+
+	var (
+		newDir     = gfile.Dir(realPath)
+		oldDir     string
+		suffix     string
+		goModName  = "go.mod"
+		goModPath  string
+		importPath string
+	)
+
+	if gfile.IsDir(filePath) {
+		suffix = gfile.Basename(filePath)
+	}
+	for {
+		goModPath = gfile.Join(newDir, goModName)
+		if gfile.Exists(goModPath) {
+			match, _ := gregex.MatchString(`^module\s+(.+)\s*`, gfile.GetContents(goModPath))
+			importPath = gstr.Trim(match[1]) + "/" + suffix
+			importPath = gstr.Replace(importPath, `\`, `/`)
+			importPath = gstr.TrimRight(importPath, `/`)
+			return importPath
+		}
+		oldDir = newDir
+		newDir = gfile.Dir(oldDir)
+		if newDir == oldDir {
+			return ""
+		}
+		suffix = gfile.Basename(oldDir) + "/" + suffix
+	}
+}
+
+// GetModPath retrieves and returns the file path of go.mod for current project.
+func GetModPath() string {
+	var (
+		oldDir    = gfile.Pwd()
+		newDir    = oldDir
+		goModName = "go.mod"
+		goModPath string
+	)
+	for {
+		goModPath = gfile.Join(newDir, goModName)
+		if gfile.Exists(goModPath) {
+			return goModPath
+		}
+		newDir = gfile.Dir(oldDir)
+		if newDir == oldDir {
+			break
+		}
+		oldDir = newDir
+	}
+	return ""
 }

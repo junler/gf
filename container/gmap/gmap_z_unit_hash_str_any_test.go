@@ -7,6 +7,7 @@
 package gmap_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/gogf/gf/v2/container/garray"
@@ -106,6 +107,23 @@ func Test_StrAnyMap_Batch(t *testing.T) {
 		t.Assert(m.Map(), map[string]interface{}{"a": 1, "b": "2", "c": 3})
 		m.Removes([]string{"a", "b"})
 		t.Assert(m.Map(), map[string]interface{}{"c": 3})
+	})
+}
+
+func Test_StrAnyMap_Iterator_Deadlock(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		m := gmap.NewStrAnyMapFrom(map[string]interface{}{"1": "1", "2": "2", "3": "3", "4": "4"}, true)
+		m.Iterator(func(k string, _ interface{}) bool {
+			kInt, _ := strconv.Atoi(k)
+			if kInt%2 == 0 {
+				m.Remove(k)
+			}
+			return true
+		})
+		t.Assert(m.Map(), map[string]interface{}{
+			"1": "1",
+			"3": "3",
+		})
 	})
 }
 
@@ -394,5 +412,26 @@ func Test_StrAnyMap_IsSubOf(t *testing.T) {
 		t.Assert(m1.IsSubOf(m2), false)
 		t.Assert(m2.IsSubOf(m1), true)
 		t.Assert(m2.IsSubOf(m2), true)
+	})
+}
+
+func Test_StrAnyMap_Diff(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		m1 := gmap.NewStrAnyMapFrom(g.MapStrAny{
+			"0": "v0",
+			"1": "v1",
+			"2": "v2",
+			"3": 3,
+		})
+		m2 := gmap.NewStrAnyMapFrom(g.MapStrAny{
+			"0": "v0",
+			"2": "v2",
+			"3": "v3",
+			"4": "v4",
+		})
+		addedKeys, removedKeys, updatedKeys := m1.Diff(m2)
+		t.Assert(addedKeys, []string{"4"})
+		t.Assert(removedKeys, []string{"1"})
+		t.Assert(updatedKeys, []string{"3"})
 	})
 }

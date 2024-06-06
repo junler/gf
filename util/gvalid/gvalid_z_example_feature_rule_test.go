@@ -57,6 +57,29 @@ func ExampleRule_RequiredIf() {
 	// The WifeName field is required
 }
 
+func ExampleRule_RequiredIfAll() {
+	type BizReq struct {
+		ID       uint   `v:"required" dc:"Your ID"`
+		Name     string `v:"required" dc:"Your name"`
+		Age      int    `v:"required" dc:"Your age"`
+		MoreInfo string `v:"required-if-all:id,1,age,18" dc:"Your more info"`
+	}
+	var (
+		ctx = context.Background()
+		req = BizReq{
+			ID:   1,
+			Name: "test",
+			Age:  18,
+		}
+	)
+	if err := g.Validator().Data(req).Run(ctx); err != nil {
+		fmt.Println(err)
+	}
+
+	// Output:
+	// The MoreInfo field is required
+}
+
 func ExampleRule_RequiredUnless() {
 	type BizReq struct {
 		ID          uint   `v:"required" dc:"Your ID"`
@@ -331,6 +354,34 @@ func ExampleRule_Email() {
 	// The MailAddr4 value `gf#goframe.org` is not a valid email address
 }
 
+func ExampleRule_Enums() {
+	type Status string
+	const (
+		StatusRunning Status = "Running"
+		StatusOffline Status = "Offline"
+	)
+	type BizReq struct {
+		Id     int    `v:"required"`
+		Name   string `v:"required"`
+		Status Status `v:"enums"`
+	}
+
+	var (
+		ctx = context.Background()
+		req = BizReq{
+			Id:     1,
+			Name:   "john",
+			Status: Status("Pending"),
+		}
+	)
+	if err := g.Validator().Data(req).Run(ctx); err != nil {
+		fmt.Print(gstr.Join(err.Strings(), "\n"))
+	}
+
+	// May Output:
+	// The Status value `Pending` should be in enums of: ["Running","Offline"]
+}
+
 func ExampleRule_Phone() {
 	type BizReq struct {
 		PhoneNumber1 string `v:"phone"`
@@ -343,8 +394,8 @@ func ExampleRule_Phone() {
 		ctx = context.Background()
 		req = BizReq{
 			PhoneNumber1: "13578912345",
-			PhoneNumber2: "11578912345", // error 11x not exist
-			PhoneNumber3: "17178912345", // error 171 not exit
+			PhoneNumber2: "17178912345",
+			PhoneNumber3: "11578912345", // error 11x not exist
 			PhoneNumber4: "1357891234",  // error len must be 11
 		}
 	)
@@ -353,8 +404,7 @@ func ExampleRule_Phone() {
 	}
 
 	// Output:
-	// The PhoneNumber2 value `11578912345` is not a valid phone number
-	// The PhoneNumber3 value `17178912345` is not a valid phone number
+	// The PhoneNumber3 value `11578912345` is not a valid phone number
 	// The PhoneNumber4 value `1357891234` is not a valid phone number
 }
 
@@ -480,9 +530,9 @@ func ExampleRule_Password2() {
 	}
 
 	// Output:
-	// The Password2 value `gofra` is not a valid password format
-	// The Password3 value `Goframe` is not a valid password format
-	// The Password4 value `goframe123` is not a valid password format
+	// The Password2 value `gofra` is not a valid password2 format
+	// The Password3 value `Goframe` is not a valid password2 format
+	// The Password4 value `goframe123` is not a valid password2 format
 }
 
 func ExampleRule_Password3() {
@@ -505,8 +555,8 @@ func ExampleRule_Password3() {
 	}
 
 	// Output:
-	// The Password2 value `gofra` is not a valid password format
-	// The Password3 value `Goframe123` is not a valid password format
+	// The Password2 value `gofra` is not a valid password3 format
+	// The Password3 value `Goframe123` is not a valid password3 format
 }
 
 func ExampleRule_Postcode() {
@@ -1012,7 +1062,7 @@ func ExampleRule_Same() {
 	}
 
 	// Output:
-	// The Password value `goframe.org` must be the same as field Password2
+	// The Password value `goframe.org` must be the same as field Password2 value `goframe.net`
 }
 
 func ExampleRule_Different() {
@@ -1034,7 +1084,7 @@ func ExampleRule_Different() {
 	}
 
 	// Output:
-	// The OtherMailAddr value `gf@goframe.org` must be different from field MailAddr
+	// The OtherMailAddr value `gf@goframe.org` must be different from field MailAddr value `gf@goframe.org`
 }
 
 func ExampleRule_In() {

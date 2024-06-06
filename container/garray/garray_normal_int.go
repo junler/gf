@@ -173,7 +173,11 @@ func (a *IntArray) InsertBefore(index int, values ...int) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if index < 0 || index >= len(a.array) {
-		return gerror.NewCodef(gcode.CodeInvalidParameter, "index %d out of array range %d", index, len(a.array))
+		return gerror.NewCodef(
+			gcode.CodeInvalidParameter,
+			"index %d out of array range %d",
+			index, len(a.array),
+		)
 	}
 	rear := append([]int{}, a.array[index:]...)
 	a.array = append(a.array[0:index], values...)
@@ -186,7 +190,11 @@ func (a *IntArray) InsertAfter(index int, values ...int) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if index < 0 || index >= len(a.array) {
-		return gerror.NewCodef(gcode.CodeInvalidParameter, "index %d out of array range %d", index, len(a.array))
+		return gerror.NewCodef(
+			gcode.CodeInvalidParameter,
+			"index %d out of array range %d",
+			index, len(a.array),
+		)
 	}
 	rear := append([]int{}, a.array[index+1:]...)
 	a.array = append(a.array[0:index+1], values...)
@@ -583,7 +591,11 @@ func (a *IntArray) Fill(startIndex int, num int, value int) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if startIndex < 0 || startIndex > len(a.array) {
-		return gerror.NewCodef(gcode.CodeInvalidParameter, "index %d out of array range %d", startIndex, len(a.array))
+		return gerror.NewCodef(
+			gcode.CodeInvalidParameter,
+			"index %d out of array range %d",
+			startIndex, len(a.array),
+		)
 	}
 	for i := startIndex; i < startIndex+num; i++ {
 		if i > len(a.array)-1 {
@@ -788,11 +800,9 @@ func (a *IntArray) UnmarshalValue(value interface{}) error {
 	return nil
 }
 
-// Filter `filter func(value int, index int) bool` filter array, value
-// means the value of the current element, the index of the current original
-// color of value, when the custom function returns True, the element will be
-// filtered, otherwise it will not be filtered, `Filter` function returns a new
-// array, will not modify the original array.
+// Filter iterates array and filters elements using custom callback function.
+// It removes the element from array if callback function `filter` returns true,
+// it or else does nothing and continues iterating.
 func (a *IntArray) Filter(filter func(index int, value int) bool) *IntArray {
 	a.mu.Lock()
 	defer a.mu.Unlock()

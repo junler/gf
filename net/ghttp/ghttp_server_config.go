@@ -33,10 +33,14 @@ import (
 const (
 	defaultHttpAddr  = ":80"  // Default listening port for HTTP.
 	defaultHttpsAddr = ":443" // Default listening port for HTTPS.
-	UriTypeDefault   = 0      // Method names to the URI converting type, which converts name to its lower case and joins the words using char '-'.
-	UriTypeFullName  = 1      // Method names to the URI converting type, which does not convert to the method name.
-	UriTypeAllLower  = 2      // Method names to the URI converting type, which converts name to its lower case.
-	UriTypeCamel     = 3      // Method names to the URI converting type, which converts name to its camel case.
+
+)
+
+const (
+	UriTypeDefault  = iota // Method names to the URI converting type, which converts name to its lower case and joins the words using char '-'.
+	UriTypeFullName        // Method names to the URI converting type, which does not convert to the method name.
+	UriTypeAllLower        // Method names to the URI converting type, which converts name to its lower case.
+	UriTypeCamel           // Method names to the URI converting type, which converts name to its camel case.
 )
 
 // ServerConfig is the HTTP Server configuration manager.
@@ -57,6 +61,9 @@ type ServerConfig struct {
 
 	// Listeners specifies the custom listeners.
 	Listeners []net.Listener `json:"listeners"`
+
+	// Endpoints are custom endpoints for service register, it uses Address if empty.
+	Endpoints []string `json:"endpoints"`
 
 	// HTTPSCertPath specifies certification file path for HTTPS service.
 	HTTPSCertPath string `json:"httpsCertPath"`
@@ -92,7 +99,7 @@ type ServerConfig struct {
 	WriteTimeout time.Duration `json:"writeTimeout"`
 
 	// IdleTimeout is the maximum amount of time to wait for the
-	// next request when keep-alives are enabled. If IdleTimeout
+	// next request when keep-alive are enabled. If IdleTimeout
 	// is zero, the value of ReadTimeout is used. If both are
 	// zero, there is no timeout.
 	IdleTimeout time.Duration `json:"idleTimeout"`
@@ -219,8 +226,9 @@ type ServerConfig struct {
 	// API & Swagger.
 	// ======================================================================================================
 
-	OpenApiPath string `json:"openapiPath"` // OpenApiPath specifies the OpenApi specification file path.
-	SwaggerPath string `json:"swaggerPath"` // SwaggerPath specifies the swagger UI path for route registering.
+	OpenApiPath       string `json:"openapiPath"`       // OpenApiPath specifies the OpenApi specification file path.
+	SwaggerPath       string `json:"swaggerPath"`       // SwaggerPath specifies the swagger UI path for route registering.
+	SwaggerUITemplate string `json:"swaggerUITemplate"` // SwaggerUITemplate specifies the swagger UI custom template
 
 	// ======================================================================================================
 	// Other.
@@ -520,6 +528,11 @@ func (s *Server) GetName() string {
 // SetName sets the name for the server.
 func (s *Server) SetName(name string) {
 	s.config.Name = name
+}
+
+// SetEndpoints sets the Endpoints for the server.
+func (s *Server) SetEndpoints(endpoints []string) {
+	s.config.Endpoints = endpoints
 }
 
 // SetHandler sets the request handler for server.

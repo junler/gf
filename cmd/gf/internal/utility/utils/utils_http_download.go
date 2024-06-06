@@ -1,13 +1,20 @@
+// Copyright GoFrame gf Author(https://goframe.org). All Rights Reserved.
+//
+// This Source Code Form is subject to the terms of the MIT License.
+// If a copy of the MIT was not distributed with this file,
+// You can obtain one at https://github.com/gogf/gf.
+
 package utils
 
 import (
 	"fmt"
-	"github.com/gogf/gf/v2/errors/gerror"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/gogf/gf/v2/errors/gerror"
 
 	"github.com/gogf/gf/cmd/gf/v2/internal/utility/mlog"
 )
@@ -62,16 +69,18 @@ func doPrintDownloadPercent(doneCh chan int64, localSaveFilePath string, total i
 		stop           = false
 		lastPercentFmt string
 	)
+	file, err := os.Open(localSaveFilePath)
+	if err != nil {
+		mlog.Fatal(err)
+	}
+	defer file.Close()
+
 	for {
 		select {
 		case <-doneCh:
 			stop = true
 
 		default:
-			file, err := os.Open(localSaveFilePath)
-			if err != nil {
-				mlog.Fatal(err)
-			}
 			fi, err := file.Stat()
 			if err != nil {
 				mlog.Fatal(err)

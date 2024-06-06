@@ -94,6 +94,7 @@ func (r *Registry) getServices(ctx context.Context) (services []gsvc.Service, er
 				`service "%s" is expired, update at: %s, current: %s, sub duration: %s`,
 				s.GetKey(), updateAt.String(), nowTime.String(), subDuration.String(),
 			)
+			_ = gfile.Remove(filePath)
 			continue
 		}
 		services = append(services, s)
@@ -108,6 +109,8 @@ func (r *Registry) getServiceByFilePath(filePath string) (gsvc.Service, error) {
 		fileContent = gfile.GetContents(filePath)
 		serviceKey  = gstr.Replace(fileName, defaultSeparator, gsvc.DefaultSeparator)
 	)
+
+	serviceKey = gstr.Replace(serviceKey, defaultEndpointHostPortDelimiter, gsvc.EndpointHostPortDelimiter)
 	serviceKey = gsvc.DefaultSeparator + serviceKey
 	return gsvc.NewServiceWithKV(serviceKey, fileContent)
 }

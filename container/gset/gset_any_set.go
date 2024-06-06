@@ -53,9 +53,7 @@ func NewFrom(items interface{}, safe ...bool) *Set {
 // Iterator iterates the set readonly with given callback function `f`,
 // if `f` returns true then continue iterating; or false to stop.
 func (set *Set) Iterator(f func(v interface{}) bool) {
-	set.mu.RLock()
-	defer set.mu.RUnlock()
-	for k := range set.data {
+	for _, k := range set.Slice() {
 		if !f(k) {
 			break
 		}
@@ -184,7 +182,7 @@ func (set *Set) Clear() {
 	set.mu.Unlock()
 }
 
-// Slice returns the an of items of the set as slice.
+// Slice returns all items of the set as slice.
 func (set *Set) Slice() []interface{} {
 	set.mu.RLock()
 	var (

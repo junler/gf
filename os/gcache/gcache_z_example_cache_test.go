@@ -86,8 +86,8 @@ func ExampleCache_SetIfNotExist() {
 	// It does not expire if `duration` == 0. It deletes the `key` if `duration` < 0 or given `value` is nil.
 	c.SetIfNotExist(ctx, "k1", 0, -10000)
 
-	// Wait 1 second for K1: V1 to expire automatically
-	time.Sleep(1200 * time.Millisecond)
+	// Wait 1.5 second for K1: V1 to expire automatically
+	time.Sleep(1500 * time.Millisecond)
 
 	// Print the current key value pair again and find that K1: V1 has expired
 	keys2, _ := c.Keys(ctx)
@@ -459,6 +459,23 @@ func ExampleCache_Removes() {
 
 	// Output:
 	// map[k4:v4]
+}
+
+func ExampleCache_Clear() {
+	// Create a cache object,
+	// Of course, you can also easily use the gcache package method directly
+	c := gcache.New()
+
+	c.SetMap(ctx, g.MapAnyAny{"k1": "v1", "k2": "v2", "k3": "v3", "k4": "v4"}, 0)
+
+	// clears all data of the cache.
+	c.Clear(ctx)
+
+	data, _ := c.Data(ctx)
+	fmt.Println(data)
+
+	// Output:
+	// map[]
 }
 
 func ExampleCache_MustGet() {

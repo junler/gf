@@ -1,3 +1,9 @@
+// Copyright GoFrame gf Author(https://goframe.org). All Rights Reserved.
+//
+// This Source Code Form is subject to the terms of the MIT License.
+// If a copy of the MIT was not distributed with this file,
+// You can obtain one at https://github.com/gogf/gf.
+
 package cmd
 
 import (
@@ -49,6 +55,7 @@ func (c cGF) Index(ctx context.Context, in cGFInput) (out *cGFOutput, err error)
 		_, err = Version.Index(ctx, cVersionInput{})
 		return
 	}
+
 	answer := "n"
 	// No argument or option, do installation checks.
 	if data, isInstalled := service.Install.IsInstalled(); !isInstalled {
@@ -65,6 +72,7 @@ func (c cGF) Index(ctx context.Context, in cGFInput) (out *cGFOutput, err error)
 		gcmd.Scan("press `Enter` to exit...")
 		return
 	}
+
 	// Print help content.
 	gcmd.CommandFromCtx(ctx).Print()
 	return

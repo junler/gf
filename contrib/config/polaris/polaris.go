@@ -158,15 +158,18 @@ func (c *Client) doWatch(ctx context.Context) (err error) {
 	if !c.config.Watch {
 		return nil
 	}
-	var changeChan = make(chan model.ConfigFileChangeEvent)
-	c.client.AddChangeListenerWithChannel(changeChan)
-	go func() {
-		for {
-			select {
-			case <-changeChan:
-				_ = c.doUpdate(ctx)
-			}
-		}
-	}()
+	go c.startAsynchronousWatch(
+		ctx,
+		c.client.AddChangeListenerWithChannel(),
+	)
 	return nil
+}
+
+func (c *Client) startAsynchronousWatch(ctx context.Context, changeChan <-chan model.ConfigFileChangeEvent) {
+	for {
+		select {
+		case <-changeChan:
+			_ = c.doUpdate(ctx)
+		}
+	}
 }
