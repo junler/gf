@@ -93,10 +93,11 @@ func Equal(err, target error) bool {
 // Is reports whether current error `err` has error `target` in its chaining errors.
 // It is just for implements for stdlib errors.Is from Go version 1.17.
 func Is(err, target error) bool {
-	if e, ok := err.(IIs); ok {
-		return e.Is(target)
+	e, ok := err.(IIs)
+	if !ok {
+		e = New(err.Error()).(IIs)
 	}
-	return false
+	return e.Is(target)
 }
 
 // HasError is alias of Is, which more easily understanding semantics.

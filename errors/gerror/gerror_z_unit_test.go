@@ -17,6 +17,8 @@ import (
 	"github.com/gogf/gf/v2/test/gtest"
 )
 
+var ErrNotFound = errors.New("not found")
+
 func nilError() error {
 	return nil
 }
@@ -414,6 +416,13 @@ func Test_Is(t *testing.T) {
 		err2 := gerror.Wrap(err1, "2")
 		err2 = gerror.Wrap(err2, "3")
 		t.Assert(gerror.Is(err2, err1), true)
+	})
+}
+
+func Test_StdErr_Is(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		t.Assert(errors.Is(ErrNotFound, ErrNotFound), true)
+		t.Assert(gerror.Is(ErrNotFound, ErrNotFound), true)
 	})
 }
 
